@@ -2,57 +2,78 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+       xmlns:util="http://www.springframework.org/schema/util"
+
+       xmlns:context="http://www.springframework.org/schema/context"
+
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+
        xsi:schemaLocation="
-            http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-context-3.2.xsd">
 
+    <import resource="loggers.xml"/>
+    <import resource="others.xml"/>
 
-    <bean id="client" class="Client">
-        <constructor-arg index="0" value="1"/>
-        <constructor-arg index="1" value="John Smith"/>
-    </bean>
+    <!-- сказать чтоб просканировал пакет на наличие @Component -->
+    <context:component-scan base-package="." />
 
-    <bean id="eventLogger" class="ConsoleEventLogger"/>
-
-    <bean id="event" class="Event" scope="prototype">
-        <!-- а это типо внутрений бин! -->
-        <constructor-arg>
-            <bean class="java.util.Date"/>
-        </constructor-arg>
-
-        <constructor-arg ref="dateFormat"/>
-
-        <!-- установление значения поля -->
-        <!--<property name="msg" value="привет!" />-->
-    </bean>
-
-    <bean id="app" class="App">
-        <constructor-arg ref="client"/>
-        <!--<constructor-arg ref="eventLogger"/>-->
-        <!--<constructor-arg ref="fileLogger"/>-->
-        <constructor-arg ref="cachedFileLogger"/>
-    </bean>
-
-    <!-- а тут мы юзаем фабричный метод (статический)
-    для создания объекта абстрактного класса.
+    <!--
+        <bean id="client" class="Client">
+            <constructor-arg value="1"/>
+            <constructor-arg value="John Smith"/>
+            <property name="greeting" value="Hello there!"/>
+        </bean>
     -->
-    <bean id="dateFormat"
-          class="java.text.DateFormat"
-          factory-method="getDateTimeInstance"
-    />
 
-    <bean id="fileLogger" class="FileEventLogger" init-method="init">
-        <constructor-arg value="1.txt"/>
+    <!-- пример использования нэймспейса P -->
+    <bean id="client" class="Client"
+          p:greeting="${greeting}">
+
+        <constructor-arg value="${id}"/>
+        <constructor-arg value="${name}"/>
+        <!--<property name="greeting" value="${greeting}"/>-->
     </bean>
 
     <bean
-            id="cachedFileLogger"
-            class="CacheFileLogger"
-            init-method="init"
-            destroy-method="destroy">
+            id="app"
+            class="App">
 
-        <constructor-arg index="0" value="3.txt"/>
-        <constructor-arg index="1" value="3"/>
+        <constructor-arg ref="client"/>
+        <constructor-arg ref="cacheFileEventLogger"/>
+        <constructor-arg>
+            <map>
+                <entry
+                        key="INFO"
+                        value-ref="consoleEventLogger"
+                />
+                <entry
+                        key="ERROR"
+                        value-ref="combinedEventLogger"
+                />
+            </map>
+        </constructor-arg>
+
+        <!--<constructor-arg ref="fileEventLogger"/>-->
+        <!--<constructor-arg ref="cachedFileEventLogger"/>-->
+    </bean>
+
+    <!-- служебный бин для того чтобы работали ссылки вида ${blabla} на данные из client.properties -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:client.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="systemPropertiesMode">
+            <util:constant
+                    static-field="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+        </property>
     </bean>
 
 </beans>

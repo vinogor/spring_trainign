@@ -1,15 +1,16 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class CacheFileLogger extends FileEventLogger  {
+public class CacheFileEventLogger extends FileEventLogger  {
 
-    public CacheFileLogger(String fileName, int cacheSize) {
+    public CacheFileEventLogger(String fileName, int cacheSize) {
         super(fileName);
         this.cacheSize = cacheSize;
     }
 
     private int cacheSize;
     private List<Event> cache = new ArrayList<>();
+
 
     @Override
     public void logEvent(Event event) {

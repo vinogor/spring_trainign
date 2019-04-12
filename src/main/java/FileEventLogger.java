@@ -3,8 +3,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class FileEventLogger implements EventLogger {
 
     private String fileName;

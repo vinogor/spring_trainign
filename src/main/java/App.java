@@ -1,48 +1,54 @@
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.Map;
 
 public class App {
 
+//    @Autowired
     private Client client;
-    private EventLogger eventLogger;
-    private static Event event;
+    private EventLogger defaultLogger;
+    private Map<EventType, EventLogger> loggers;
 
-    public App(Client client, EventLogger eventLogger) {
+    public App(Client client, EventLogger defaultLogger, Map<EventType, EventLogger> loggers) {
+        super();
         this.client = client;
-        this.eventLogger = eventLogger;
+        this.defaultLogger = defaultLogger;
+        this.loggers = loggers;
     }
 
     public static void main(String[] args) {
 
         // создаём контекст (контейнер) и указываем xml файл
         // контекст - управляет контейнером, в котором хранятся бины и обеспечивает доступ к ним
-        ApplicationContext appContext = new ClassPathXmlApplicationContext("spring.xml");
+        ConfigurableApplicationContext appContext = new ClassPathXmlApplicationContext("spring.xml");
 
         // запрашиваем бин по имени (придётся кастить класс возвращ объекта)
         // (но ещё можно и по классу, по классу и имени, )
         App app = (App) appContext.getBean("app");
+
 //        App app1 = appContext.getBean(App.class);
 //        App app2 = appContext.getBean(App.class, "app");
 
-        event = (Event) appContext.getBean("event");
+        Event event = appContext.getBean(Event.class);
 
-        app.logEvent("Some event for 1");
-        app.logEvent("Some event for 2");
+        app.logEvent(null, event, "Some event for 3");
 
-        event.setMsg("Ку ку!");
-        app.logEvent(event);
-        app.logEvent(event);
-        ((ClassPathXmlApplicationContext) appContext).close();
+        appContext.close();
+
     }
 
-    public void logEvent(String msg) {
-        String message = msg.replaceAll(client.getId(), client.getFullName());
-        eventLogger.logEvent(message);
+    public void logEvent(EventType eventType, Event event, String msg) {
+
+        String message = msg.replaceAll(client.getId(), client.getFullName())+client.getGreeting();
+        event.setMsg(message);
+
+        EventLogger logger = loggers.get(eventType);
+        if (logger == null) {
+            logger = defaultLogger;
+        }
+
+        logger.logEvent(event);
     }
-
-    public void logEvent(Event event) {
-        eventLogger.logEvent(event);
-    }
-
-
 }

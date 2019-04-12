@@ -37,5 +37,7 @@ public class Event {
                 ", msg='" + msg + '\'' +
                 ", date=" + dateFormat.format(date) +
                 '}' + "\n";
+        // чёт перенос строки в файл не записывается
+        // а нет, это блокнот тупой
     }
 }
