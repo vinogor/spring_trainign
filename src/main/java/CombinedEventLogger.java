@@ -15,4 +15,9 @@ public class CombinedEventLogger implements EventLogger {
             eventLogger.logEvent(event);
         }
     }
+
+    @Override
+    public String getName() {
+        return null;
+    }
 }

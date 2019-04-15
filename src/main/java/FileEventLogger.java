@@ -25,6 +25,11 @@ public class FileEventLogger implements EventLogger {
         }
     }
 
+    @Override
+    public String getName() {
+        return null;
+    }
+
     public void init() throws IOException {
         File file = new File(fileName);
         if (!(file.canWrite() || !file.exists())) {
